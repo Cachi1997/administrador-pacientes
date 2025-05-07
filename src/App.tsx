@@ -1,10 +1,7 @@
-import { useState } from "react";
 import PatientForm from "./components/PatientForm";
 import PatientList from "./components/PatientList";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <div className="container mx-auto mt-20">
