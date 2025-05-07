@@ -4,7 +4,7 @@ export type Patient = {
   caretaker: string;
   email: string;
   date: Date;
-  sintomas: string;
+  symptoms: string;
 };
 
 export type DraftPatient = Omit<Patient, "id">;
