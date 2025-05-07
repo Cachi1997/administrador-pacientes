@@ -1,11 +1,21 @@
 import { useState } from "react";
+import PatientForm from "./components/PatientForm";
+import PatientList from "./components/PatientList";
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
     <>
-      <h1 className="bg-amber-800">Pacientes</h1>
+      <div className="container mx-auto mt-20">
+        <h1 className="font-black text-5xl text-center md:w-2/3 md:mx-auto">
+          Seguimiento de pacientes
+        </h1>
+        <div className="mt-12 md:flex">
+          <PatientForm />
+          <PatientList />
+        </div>
+      </div>
     </>
   );
 }
