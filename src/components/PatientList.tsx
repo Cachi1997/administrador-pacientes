@@ -10,12 +10,12 @@ const PatientList = () => {
     <div className="md:w-1/2 lg:w-3/5 md:h-screen overflow-y-scroll">
       {patients.length ? (
         <>
-          <h2 className="font-black text-3xl text-center">
-            Listado de Pacientes
-          </h2>
+          <h2 className="font-black text-3xl text-center">Patient list</h2>
           <p className="text-xl mt-5 mb-10 text-center">
-            Administra tus{" "}
-            <span className="text-indigo-600 font-bold">Pacientes y Citas</span>
+            Manage your{" "}
+            <span className="text-indigo-600 font-bold">
+              Patients and Appointments
+            </span>
           </p>
           {patients.map((patient) => (
             <PatientDetails key={patient.id} patient={patient} />
@@ -23,11 +23,13 @@ const PatientList = () => {
         </>
       ) : (
         <>
-          <h2 className="font-black text-3xl text-center">No hay pacientes</h2>
+          <h2 className="font-black text-3xl text-center">
+            There are no patients
+          </h2>
           <p className="text-xl mt-5 mb-10 text-center">
-            Comienza agregando pacientes{" "}
+            Start by adding patients{" "}
             <span className="text-indigo-600 font-bold">
-              y apareceran en este lugar
+              and they will appear here
             </span>
           </p>
         </>

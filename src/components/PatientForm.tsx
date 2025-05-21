@@ -20,13 +20,13 @@ const PatientForm = () => {
       const activePatient = patients.filter(
         (patient) => patient.id === activeId
       )[0];
-      setValue("name", activePatient.name);
-      setValue("caretaker", activePatient.caretaker);
-      setValue("email", activePatient.email);
-      setValue("date", activePatient.date);
-      setValue("symptoms", activePatient.symptoms);
+      setValue("name", activePatient?.name || "");
+      setValue("caretaker", activePatient?.caretaker || "");
+      setValue("email", activePatient?.email || "");
+      setValue("date", activePatient?.date || "");
+      setValue("symptoms", activePatient?.symptoms || "");
     }
-  }, [activeId]);
+  }, [activeId, setValue, patients]);
 
   const registerPatient = (data: DraftPatient) => {
     if (activeId) {
@@ -42,11 +42,11 @@ const PatientForm = () => {
 
   return (
     <div className="md:w-1/2 lg:w-2/5 mx-5">
-      <h2 className="font-black text-3xl text-center">Seguimiento Pacientes</h2>
+      <h2 className="font-black text-3xl text-center">Patient monitoring</h2>
 
       <p className="text-lg mt-5 text-center mb-10">
-        Añade Pacientes y {""}
-        <span className="text-indigo-600 font-bold">Administralos</span>
+        Add Patients and {""}
+        <span className="text-indigo-600 font-bold">Manage them</span>
       </p>
 
       <form
