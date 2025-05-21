@@ -20,13 +20,13 @@ const PatientForm = () => {
       const activePatient = patients.filter(
         (patient) => patient.id === activeId
       )[0];
-      setValue("name", activePatient.name);
-      setValue("caretaker", activePatient.caretaker);
-      setValue("email", activePatient.email);
-      setValue("date", activePatient.date);
-      setValue("symptoms", activePatient.symptoms);
+      setValue("name", activePatient?.name || "");
+      setValue("caretaker", activePatient?.caretaker || "");
+      setValue("email", activePatient?.email || "");
+      setValue("date", activePatient?.date || "");
+      setValue("symptoms", activePatient?.symptoms || "");
     }
-  }, [activeId]);
+  }, [activeId, setValue, patients]);
 
   const registerPatient = (data: DraftPatient) => {
     if (activeId) {
@@ -42,11 +42,11 @@ const PatientForm = () => {
 
   return (
     <div className="md:w-1/2 lg:w-2/5 mx-5">
-      <h2 className="font-black text-3xl text-center">Seguimiento Pacientes</h2>
+      <h2 className="font-black text-3xl text-center">Patient monitoring</h2>
 
       <p className="text-lg mt-5 text-center mb-10">
-        Añade Pacientes y {""}
-        <span className="text-indigo-600 font-bold">Administralos</span>
+        Add Patients and {""}
+        <span className="text-indigo-600 font-bold">Manage them</span>
       </p>
 
       <form
@@ -72,15 +72,15 @@ const PatientForm = () => {
 
         <div className="mb-5">
           <label htmlFor="caretaker" className="text-sm uppercase font-bold">
-            Propietario
+            Owner
           </label>
           <input
             id="caretaker"
             className="w-full p-3  border border-gray-100"
             type="text"
-            placeholder="Nombre del Propietario"
+            placeholder="Owner's Name"
             {...register("caretaker", {
-              required: "El nombre del propietario es obligatorio",
+              required: "Owner's name is required",
             })}
           />
           {errors.caretaker && (
