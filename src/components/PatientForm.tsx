@@ -72,15 +72,15 @@ const PatientForm = () => {
 
         <div className="mb-5">
           <label htmlFor="caretaker" className="text-sm uppercase font-bold">
-            Propietario
+            Owner
           </label>
           <input
             id="caretaker"
             className="w-full p-3  border border-gray-100"
             type="text"
-            placeholder="Nombre del Propietario"
+            placeholder="Owner's Name"
             {...register("caretaker", {
-              required: "El nombre del propietario es obligatorio",
+              required: "Owner's name is required",
             })}
           />
           {errors.caretaker && (

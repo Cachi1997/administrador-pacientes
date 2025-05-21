@@ -22,21 +22,21 @@ const PatientDetails = ({ patient }: PatientDetailsProps) => {
       <PatientDetailItem label="Propietario" data={patient.caretaker} />
       <PatientDetailItem label="Email" data={patient.email} />
       <PatientDetailItem label="Fecha de alta" data={patient.date.toString()} />
-      <PatientDetailItem label="Sintomas" data={patient.symptoms} />
+      <PatientDetailItem label="Symptoms" data={patient.symptoms} />
       <div className="flex flex-col lg:flex-row gap-3 justify-between mt-10">
         <button
           type="button"
           className="py-2 px-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold uppercase rounded-lg cursor-pointer"
           onClick={() => getPatientById(patient.id)}
         >
-          Editar
+          Edit
         </button>
         <button
           type="button"
           className="py-2 px-10 bg-red-600 hover:bg-red-700 text-white font-bold uppercase rounded-lg cursor-pointer"
           onClick={handleEliminar}
         >
-          Eliminar
+          Delete
         </button>
       </div>
     </div>
