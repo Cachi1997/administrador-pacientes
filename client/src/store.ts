@@ -5,10 +5,11 @@ import { devtools, persist } from "zustand/middleware";
 
 type PatientState = {
   patients: Patient[];
-  activeId: Patient["id"];
+  activeId: Patient["id"] | null;
   addPatient: (data: DraftPatient) => void;
   deletePatient: (id: Patient["id"]) => void;
   getPatientById: (id: Patient["id"]) => void;
+  clearActiveId: () => void;
   updatePatient: (data: DraftPatient) => void;
 };
 
@@ -24,7 +25,7 @@ export const usePatientStore = create<PatientState>()(
     persist(
       (set) => ({
         patients: [],
-        activeId: "",
+        activeId: null,
         addPatient: (data) => {
           const newPatient = createPatient(data);
           set((state) => ({
@@ -34,6 +35,8 @@ export const usePatientStore = create<PatientState>()(
         deletePatient: (id) => {
           set((state) => ({
             patients: state.patients.filter((patient) => patient.id !== id),
+            // Si se elimina el paciente en edición, salimos del modo edición.
+            activeId: state.activeId === id ? null : state.activeId,
           }));
         },
         getPatientById: (id) => {
@@ -41,20 +44,30 @@ export const usePatientStore = create<PatientState>()(
             activeId: id,
           }));
         },
-        updatePatient: (data) => {
-          set((state) => ({
-            patients: state.patients.map((patient) =>
-              patient.id === state.activeId
-                ? { id: state.activeId, ...data }
-                : patient
-            ),
-            activeId: "",
+        clearActiveId: () => {
+          set(() => ({
+            activeId: null,
           }));
+        },
+        updatePatient: (data) => {
+          set((state) => {
+            if (!state.activeId) return state;
+
+            return {
+              patients: state.patients.map((patient) =>
+                patient.id === state.activeId
+                  ? { ...patient, ...data }
+                  : patient,
+              ),
+              activeId: null,
+            };
+          });
         },
       }),
       {
         name: "patient-storage",
-      }
-    )
-  )
+        partialize: (state) => ({ patients: state.patients }),
+      },
+    ),
+  ),
 );

@@ -3,7 +3,7 @@ export type Patient = {
   name: string;
   caretaker: string;
   email: string;
-  date: Date;
+  date: string;
   symptoms: string;
 };
 
