@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@pacientes/shared": "*",
     "@tailwindcss/vite": "^4.1.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -17,6 +19,7 @@
     "react-toastify": "^11.0.5",
     "tailwindcss": "^4.1.5",
     "uuid": "^11.1.0",
+    "zod": "^4.5.4",
     "zustand": "^5.0.4"
   },
   "devDependencies": {

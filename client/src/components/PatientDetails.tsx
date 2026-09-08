@@ -1,4 +1,4 @@
-import type { Patient } from "../types";
+import type { Patient } from "@pacientes/shared";
 import PatientDetailItem from "./PatientDetailItem";
 import { usePatientStore } from "../store";
 import { toast } from "react-toastify";
@@ -28,7 +28,10 @@ const PatientDetails = ({ patient }: PatientDetailsProps) => {
       <PatientDetailItem label="Nombre" data={patient.name} />
       <PatientDetailItem label="Propietario" data={patient.caretaker} />
       <PatientDetailItem label="Email" data={patient.email} />
-      <PatientDetailItem label="Fecha de alta" data={formatDate(patient.date)} />
+      <PatientDetailItem
+        label="Fecha de alta"
+        data={formatDate(patient.date)}
+      />
       <PatientDetailItem label="Sintomas" data={patient.symptoms} />
       <div className="flex flex-col lg:flex-row gap-3 justify-between mt-10">
         <button

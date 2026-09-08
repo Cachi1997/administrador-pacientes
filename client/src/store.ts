@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DraftPatient, Patient } from "./types";
+import type { DraftPatient, Patient } from "@pacientes/shared";
 import { v4 as uuidv4 } from "uuid";
 import { devtools, persist } from "zustand/middleware";
 

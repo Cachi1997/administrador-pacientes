@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import Error from "./Error";
-import type { DraftPatient } from "../types";
+import type { DraftPatient } from "@pacientes/shared";
 import { usePatientStore } from "../store";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
