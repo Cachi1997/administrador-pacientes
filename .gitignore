@@ -25,3 +25,8 @@ dist-ssr
 
 # Claude Code (config local, no compartible)
 .claude/settings.local.json
+
+# Variables de entorno (credenciales locales)
+.env
+.env.*
+!.env.example
