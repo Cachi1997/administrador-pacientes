@@ -30,3 +30,6 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Cliente de Prisma generado (se regenera con db:generate)
+server/src/generated/
