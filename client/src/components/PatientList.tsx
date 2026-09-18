@@ -1,11 +1,32 @@
-import { usePatientStore } from "../store";
+import { usePatients } from "../hooks/usePatients";
 import PatientDetails from "./PatientDetails";
 
+const containerClass = "md:w-1/2 lg:w-3/5 md:h-screen overflow-y-scroll";
+
 const PatientList = () => {
-  const patients = usePatientStore((state) => state.patients);
+  const { data: patients, isPending, isError, error } = usePatients();
+
+  if (isPending) {
+    return (
+      <div className={containerClass}>
+        <h2 className="font-black text-3xl text-center">
+          Cargando pacientes...
+        </h2>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className={containerClass}>
+        <h2 className="font-black text-3xl text-center">Ocurrió un error</h2>
+        <p className="text-xl mt-5 mb-10 text-center">{error.message}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="md:w-1/2 lg:w-3/5 md:h-screen overflow-y-scroll">
+    <div className={containerClass}>
       {patients.length ? (
         <>
           <h2 className="font-black text-3xl text-center">

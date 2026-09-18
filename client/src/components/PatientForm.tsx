@@ -1,10 +1,16 @@
 import { useForm } from "react-hook-form";
-import Error from "./Error";
-import { usePatientStore } from "../store";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { draftPatientSchema, type DraftPatient } from "@pacientes/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { draftPatientSchema, type DraftPatient } from "@pacientes/shared";
+import Error from "./Error";
+import { usePatientStore } from "../store";
+import {
+  useCreatePatient,
+  usePatients,
+  useUpdatePatient,
+} from "../hooks/usePatients";
+import { ValidationError } from "../api/patients";
 
 const initialValues: DraftPatient = {
   name: "",
@@ -15,33 +21,44 @@ const initialValues: DraftPatient = {
 };
 
 const PatientForm = () => {
-  const addPatient = usePatientStore((state) => state.addPatient);
-  const updatePatient = usePatientStore((state) => state.updatePatient);
+  const { data: patients } = usePatients();
+  const activeId = usePatientStore((state) => state.activeId);
   const clearActiveId = usePatientStore((state) => state.clearActiveId);
-  const activePatient = usePatientStore((state) =>
-    state.patients.find((patient) => patient.id === state.activeId),
-  );
+  const createPatient = useCreatePatient();
+  const updatePatient = useUpdatePatient();
+
+  const activePatient = patients?.find((patient) => patient.id === activeId);
+  const isEditing = Boolean(activePatient);
+  const isSaving = createPatient.isPending || updatePatient.isPending;
 
   const formRef = useRef<HTMLFormElement>(null);
+  const lastLoadedId = useRef<string | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setError,
   } = useForm<DraftPatient>({
     defaultValues: initialValues,
     resolver: zodResolver(draftPatientSchema),
   });
 
-  const isEditing = Boolean(activePatient);
-
   useEffect(() => {
     if (!activePatient) {
-      reset(initialValues);
+      if (lastLoadedId.current !== null) {
+        lastLoadedId.current = null;
+        reset(initialValues);
+      }
       return;
     }
 
+    // Sólo cargamos el formulario cuando cambia el paciente, no cuando la
+    // lista se refresca: si no, un refetch borraría lo que se está escribiendo.
+    if (lastLoadedId.current === activePatient.id) return;
+
+    lastLoadedId.current = activePatient.id;
     reset({
       name: activePatient.name,
       caretaker: activePatient.caretaker,
@@ -49,25 +66,45 @@ const PatientForm = () => {
       date: activePatient.date,
       symptoms: activePatient.symptoms,
     });
-
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [activePatient, reset]);
 
+  const handleApiError = (error: globalThis.Error) => {
+    if (error instanceof ValidationError) {
+      for (const [field, message] of Object.entries(error.errors)) {
+        setError(field as keyof DraftPatient, { message });
+      }
+      return;
+    }
+    toast.error("No se pudo guardar el paciente");
+  };
+
   const registerPatient = (data: DraftPatient) => {
-    if (isEditing) {
-      updatePatient(data);
-      toast.success("Paciente actualizado correctamente");
-    } else {
-      addPatient(data);
-      toast.success("Paciente registrado correctamente");
+    if (activeId) {
+      updatePatient.mutate(
+        { id: activeId, draft: data },
+        {
+          onSuccess: () => {
+            toast.success("Paciente actualizado correctamente");
+            clearActiveId();
+          },
+          onError: handleApiError,
+        },
+      );
+      return;
     }
 
-    reset(initialValues);
+    createPatient.mutate(data, {
+      onSuccess: () => {
+        toast.success("Paciente registrado correctamente");
+        reset(initialValues);
+      },
+      onError: handleApiError,
+    });
   };
 
   const handleCancel = () => {
     clearActiveId();
-    reset(initialValues);
   };
 
   return (
@@ -102,7 +139,7 @@ const PatientForm = () => {
             placeholder="Nombre del Paciente"
             {...register("name")}
           />
-          {errors.name && <Error>{errors.name?.message?.toString()}</Error>}
+          {errors.name && <Error>{errors.name.message}</Error>}
         </div>
 
         <div className="mb-5">
@@ -116,9 +153,7 @@ const PatientForm = () => {
             placeholder="Nombre del Propietario"
             {...register("caretaker")}
           />
-          {errors.caretaker && (
-            <Error>{errors.caretaker?.message?.toString()}</Error>
-          )}
+          {errors.caretaker && <Error>{errors.caretaker.message}</Error>}
         </div>
 
         <div className="mb-5">
@@ -132,7 +167,7 @@ const PatientForm = () => {
             placeholder="Email de Registro"
             {...register("email")}
           />
-          {errors.email && <Error>{errors.email?.message?.toString()}</Error>}
+          {errors.email && <Error>{errors.email.message}</Error>}
         </div>
 
         <div className="mb-5">
@@ -145,7 +180,7 @@ const PatientForm = () => {
             type="date"
             {...register("date")}
           />
-          {errors.date && <Error>{errors.date?.message?.toString()}</Error>}
+          {errors.date && <Error>{errors.date.message}</Error>}
         </div>
 
         <div className="mb-5">
@@ -158,15 +193,20 @@ const PatientForm = () => {
             placeholder="Síntomas del paciente"
             {...register("symptoms")}
           />
-          {errors.symptoms && (
-            <Error>{errors.symptoms?.message?.toString()}</Error>
-          )}
+          {errors.symptoms && <Error>{errors.symptoms.message}</Error>}
         </div>
 
         <input
           type="submit"
-          className="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-colors"
-          value={isEditing ? "Guardar Cambios" : "Guardar Paciente"}
+          className="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-colors disabled:opacity-50"
+          disabled={isSaving}
+          value={
+            isSaving
+              ? "Guardando..."
+              : isEditing
+                ? "Guardar Cambios"
+                : "Guardar Paciente"
+          }
         />
 
         {isEditing && (
