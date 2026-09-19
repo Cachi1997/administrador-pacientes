@@ -1,6 +1,8 @@
 import { afterAll, beforeEach } from "vitest";
 
-process.loadEnvFile(".env.test");
+import { existsSync } from "node:fs";
+
+if (existsSync(".env.test")) process.loadEnvFile(".env.test");
 
 const { prisma } = await import("../prisma");
 

@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [master]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: pacientes
+          POSTGRES_PASSWORD: pacientes
+          POSTGRES_DB: pacientes_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pacientes -d pacientes_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://pacientes:pacientes@localhost:5432/pacientes_test?schema=public
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generar el cliente de Prisma
+        run: npm run db:generate --workspace server
+
+      - run: npm run lint
+
+      - name: Typecheck del server
+        run: npm run typecheck --workspace server
+
+      - name: Build del cliente
+        run: npm run build
+
+      - name: Migrar la base de tests
+        run: npm run db:migrate:test --workspace server
+
+      - run: npm test
