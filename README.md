@@ -1,54 +1,117 @@
-# React + TypeScript + Vite
+# Patient Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![CI](https://github.com/Cachi1997/administrador-pacientes/actions/workflows/ci.yml/badge.svg)](https://github.com/Cachi1997/administrador-pacientes/actions/workflows/ci.yml)
 
-Currently, two official plugins are available:
+Full-stack app to register and track veterinary patients: a React client and an
+Express API backed by PostgreSQL, sharing a single set of Zod schemas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- Create, edit and delete patients, with validation on both client and server
+- Server-side validation errors shown on the matching form fields
+- Data persisted in PostgreSQL and cached on the client with TanStack Query
+- Integration tests and CI on every push
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech stack
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+| Layer   | Tools                                                                  |
+| ------- | ---------------------------------------------------------------------- |
+| Client  | React 19, Vite, Tailwind CSS, TanStack Query, Zustand, React Hook Form |
+| Server  | Express 5, Prisma 7, PostgreSQL 17                                     |
+| Shared  | Zod 4 schemas and the types derived from them                          |
+| Tooling | TypeScript, ESLint, Vitest, Supertest, Docker Compose, GitHub Actions  |
+
+## Architecture
+
+```
+├── client/   React app (Vite)
+├── server/   Express API + Prisma
+└── shared/   Zod schemas used by both
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The patient schema lives in `shared/` and is the single source of truth. The form
+validates with it through `zodResolver`, the API validates request bodies with it,
+and the `Patient` type is inferred from it — so the type, the client validation and
+the server validation cannot drift apart.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+On the client, patients are server state managed by TanStack Query. Zustand only
+holds UI state: which patient is being edited.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Getting started
+
+### Prerequisites
+
+- Node.js 22.9 or later and npm 11
+- Docker Desktop
+
+### Setup
+
+1. Clone the repository and install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Create the environment files from the examples and fill in the credentials:
+   - `.env.example` → `.env` (database credentials used by Docker Compose)
+   - `server/.env.example` → `server/.env` (connection string used by Prisma)
+
+   The user, password and database must match in both files.
+
+3. Start PostgreSQL (exposed on port **5434**):
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. Apply the migrations and generate the Prisma client:
+
+   ```bash
+   npm run db:migrate --workspace server
+   npm run db:generate --workspace server
+   ```
+
+5. Run the API and the client, each in its own terminal:
+
+   ```bash
+   npm run dev:server
+   npm run dev
+   ```
+
+The client runs on http://localhost:5173 and the API on http://localhost:4000.
+
+## Scripts
+
+| Command                                | Description                 |
+| -------------------------------------- | --------------------------- |
+| `npm run dev`                          | Start the client            |
+| `npm run dev:server`                   | Start the API in watch mode |
+| `npm run build`                        | Build the client            |
+| `npm run lint`                         | Lint every workspace        |
+| `npm test`                             | Run the test suites         |
+| `npm run db:studio --workspace server` | Open Prisma Studio          |
+
+## Testing
+
+The tests hit the real API against a dedicated database, so your development data is
+never touched.
+
+1. Create the test database:
+
+   ```bash
+   docker compose exec db psql -U <user> -d <database> -c "CREATE DATABASE pacientes_test;"
+   ```
+
+2. Create `server/.env.test` with a `DATABASE_URL` pointing to `pacientes_test`.
+
+3. Apply the migrations to it and run the tests:
+
+   ```bash
+   npm run db:migrate:test --workspace server
+   npm test
+   ```
+
+## Continuous integration
+
+GitHub Actions runs lint, typecheck, build and the test suite on every push, against a
+PostgreSQL service container. See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
