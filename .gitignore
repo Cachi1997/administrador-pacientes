@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code (config local, no compartible)
+.claude/settings.local.json
+
+# Variables de entorno (credenciales locales)
+.env
+.env.*
+!.env.example
+
+# Cliente de Prisma generado (se regenera con db:generate)
+server/src/generated/
