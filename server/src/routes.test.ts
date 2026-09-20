@@ -88,8 +88,15 @@ describe("POST /api/patients", () => {
     expect(asErrors(response.body)).toEqual({
       name: "El nombre del paciente es obligatorio",
       email: "Email no válido",
-      date: "La fecha de alta es obligatoria",
+      date: "La fecha debe tener el formato AAAA-MM-DD",
     });
+  });
+
+  it("distingue una fecha vacia de una con formato invalido", async () => {
+    const response = await crear({ date: "" });
+
+    expect(response.status).toBe(400);
+    expect(asErrors(response.body).date).toBe("La fecha de alta es obligatoria");
   });
 
   it("no guarda nada cuando el body es invalido", async () => {

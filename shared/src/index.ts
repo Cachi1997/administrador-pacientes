@@ -14,7 +14,8 @@ export const patientSchema = z.object({
     .pipe(z.email("Email no válido")),
   date: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha de alta es obligatoria"),
+    .min(1, "La fecha de alta es obligatoria")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe tener el formato AAAA-MM-DD"),
   symptoms: z.string().trim().min(1, "Los síntomas son obligatorios"),
 });
 

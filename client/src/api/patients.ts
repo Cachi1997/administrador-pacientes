@@ -1,8 +1,20 @@
-import type { DraftPatient, Patient } from "@pacientes/shared";
+import { z } from "zod";
+import {
+  draftPatientSchema,
+  patientSchema,
+  type DraftPatient,
+  type Patient,
+} from "@pacientes/shared";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 
-export type FieldErrors = Partial<Record<keyof DraftPatient, string>>;
+const fieldErrorsSchema = z.partialRecord(
+  draftPatientSchema.keyof(),
+  z.string(),
+);
+const validationErrorBodySchema = z.object({ errors: fieldErrorsSchema });
+
+export type FieldErrors = z.infer<typeof fieldErrorsSchema>;
 
 export class ValidationError extends Error {
   errors: FieldErrors;
@@ -14,39 +26,57 @@ export class ValidationError extends Error {
   }
 }
 
-const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
+// El tipo de lo que devuelve sale de la validación, no de una promesa con `as`.
+const parse = <S extends z.ZodType>(schema: S, data: unknown): z.infer<S> => {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    console.error("Respuesta inesperada de la API:", result.error.issues);
+    throw new Error("La API devolvió datos con un formato inesperado");
+  }
+  return result.data;
+};
+
+const request = async (path: string, init?: RequestInit): Promise<unknown> => {
   const response = await fetch(`${API_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
     ...init,
   });
 
   if (response.status === 400) {
-    const body = (await response.json()) as { errors?: FieldErrors };
-    throw new ValidationError(body.errors ?? {});
+    const body = parse(validationErrorBodySchema, await response.json());
+    throw new ValidationError(body.errors);
   }
 
   if (!response.ok) {
     throw new Error(`Error ${response.status} al llamar a la API`);
   }
 
-  if (response.status === 204) return undefined as T;
+  if (response.status === 204) return undefined;
 
-  return (await response.json()) as T;
+  return response.json();
 };
 
-export const getPatients = () => request<Patient[]>("/patients");
+export const getPatients = async (): Promise<Patient[]> =>
+  parse(patientSchema.array(), await request("/patients"));
 
-export const createPatient = (draft: DraftPatient) =>
-  request<Patient>("/patients", {
-    method: "POST",
-    body: JSON.stringify(draft),
-  });
+export const createPatient = async (draft: DraftPatient): Promise<Patient> =>
+  parse(
+    patientSchema,
+    await request("/patients", { method: "POST", body: JSON.stringify(draft) }),
+  );
 
-export const updatePatient = (id: Patient["id"], draft: DraftPatient) =>
-  request<Patient>(`/patients/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(draft),
-  });
+export const updatePatient = async (
+  id: Patient["id"],
+  draft: DraftPatient,
+): Promise<Patient> =>
+  parse(
+    patientSchema,
+    await request(`/patients/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(draft),
+    }),
+  );
 
-export const deletePatient = (id: Patient["id"]) =>
-  request<void>(`/patients/${id}`, { method: "DELETE" });
+export const deletePatient = async (id: Patient["id"]): Promise<void> => {
+  await request(`/patients/${id}`, { method: "DELETE" });
+};
