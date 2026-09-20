@@ -1,57 +1,73 @@
 import { usePatients } from "../hooks/usePatients";
 import PatientDetails from "./PatientDetails";
 
-const containerClass = "md:w-1/2 lg:w-3/5 md:h-screen overflow-y-scroll";
+const SectionHeader = ({ count }: { count?: number }) => (
+  <div className="mb-4 flex items-baseline justify-between">
+    <h2 className="text-lg font-semibold">Pacientes</h2>
+    {count !== undefined && (
+      <span className="text-sm text-ink-muted">
+        {count === 1 ? "1 paciente" : `${count} pacientes`}
+      </span>
+    )}
+  </div>
+);
 
 const PatientList = () => {
   const { data: patients, isPending, isError, error } = usePatients();
 
   if (isPending) {
     return (
-      <div className={containerClass}>
-        <h2 className="font-black text-3xl text-center">
-          Cargando pacientes...
-        </h2>
-      </div>
+      <section>
+        <SectionHeader />
+        <div className="grid gap-4 md:grid-cols-2">
+          {[0, 1].map((key) => (
+            <div
+              key={key}
+              className="h-48 animate-pulse rounded-2xl border border-line bg-surface"
+            />
+          ))}
+        </div>
+      </section>
     );
   }
 
   if (isError) {
     return (
-      <div className={containerClass}>
-        <h2 className="font-black text-3xl text-center">Ocurrió un error</h2>
-        <p className="text-xl mt-5 mb-10 text-center">{error.message}</p>
-      </div>
+      <section>
+        <SectionHeader />
+        <div className="rounded-2xl border border-danger bg-danger-soft p-5">
+          <p className="font-medium text-danger">
+            No se pudieron cargar los pacientes
+          </p>
+          <p className="mt-1 text-sm text-ink-muted">{error.message}</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (patients.length === 0) {
+    return (
+      <section>
+        <SectionHeader count={0} />
+        <div className="rounded-2xl border border-dashed border-line p-10 text-center">
+          <p className="font-medium">Todavía no hay pacientes</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            Cargá el primero con el formulario de la izquierda.
+          </p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className={containerClass}>
-      {patients.length ? (
-        <>
-          <h2 className="font-black text-3xl text-center">
-            Listado de Pacientes
-          </h2>
-          <p className="text-xl mt-5 mb-10 text-center">
-            Administra tus{" "}
-            <span className="text-indigo-600 font-bold">Pacientes y Citas</span>
-          </p>
-          {patients.map((patient) => (
-            <PatientDetails key={patient.id} patient={patient} />
-          ))}
-        </>
-      ) : (
-        <>
-          <h2 className="font-black text-3xl text-center">No hay pacientes</h2>
-          <p className="text-xl mt-5 mb-10 text-center">
-            Comienza agregando pacientes{" "}
-            <span className="text-indigo-600 font-bold">
-              y apareceran en este lugar
-            </span>
-          </p>
-        </>
-      )}
-    </div>
+    <section>
+      <SectionHeader count={patients.length} />
+      <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(19rem,1fr))]">
+        {patients.map((patient) => (
+          <PatientDetails key={patient.id} patient={patient} />
+        ))}
+      </div>
+    </section>
   );
 };
 
