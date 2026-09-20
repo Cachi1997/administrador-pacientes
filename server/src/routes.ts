@@ -14,9 +14,14 @@ const parseDraft = (body: unknown) => {
   const result = draftPatientSchema.safeParse(body);
   if (result.success) return { data: result.data, errors: null };
 
-  const errors = Object.fromEntries(
-    result.error.issues.map((issue) => [issue.path.join("."), issue.message]),
-  );
+  // Zod puede reportar varios problemas para un mismo campo (por ejemplo, una
+  // fecha vacia falla el minimo y el formato). Nos quedamos con el primero, igual
+  // que hace zodResolver en el formulario, para no dar mensajes distintos.
+  const errors: Record<string, string> = {};
+  for (const issue of result.error.issues) {
+    const field = issue.path.join(".");
+    errors[field] ??= issue.message;
+  }
   return { data: null, errors };
 };
 
