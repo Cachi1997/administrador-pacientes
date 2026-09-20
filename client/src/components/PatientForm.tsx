@@ -20,6 +20,10 @@ const initialValues: DraftPatient = {
   symptoms: "",
 };
 
+const labelClass = "mb-1.5 block text-sm font-medium";
+const fieldClass =
+  "w-full rounded-lg border border-line bg-page px-3 py-2 text-sm outline-none transition-colors placeholder:text-ink-muted focus:border-brand focus:ring-2 focus:ring-brand";
+
 const PatientForm = () => {
   const { data: patients } = usePatients();
   const activeId = usePatientStore((state) => state.activeId);
@@ -108,116 +112,117 @@ const PatientForm = () => {
   };
 
   return (
-    <div className="md:w-1/2 lg:w-2/5 mx-5">
-      <h2 className="font-black text-3xl text-center">Seguimiento Pacientes</h2>
-
-      <p className="text-lg mt-5 text-center mb-10">
-        Añade Pacientes y {""}
-        <span className="text-indigo-600 font-bold">Administralos</span>
-      </p>
-
+    <div className="lg:sticky lg:top-24">
       <form
         ref={formRef}
-        className="bg-white shadow-md rounded-lg py-10 px-5 mb-10"
         noValidate
         onSubmit={handleSubmit(registerPatient)}
+        className="rounded-2xl border border-line bg-surface p-5 shadow-sm"
       >
-        {isEditing && (
-          <p className="mb-5 py-2 px-3 bg-indigo-100 text-indigo-800 text-sm font-bold uppercase rounded">
-            Editando: {activePatient?.name}
-          </p>
-        )}
-
-        <div className="mb-5">
-          <label htmlFor="name" className="text-sm uppercase font-bold">
-            Paciente
-          </label>
-          <input
-            id="name"
-            className="w-full p-3  border border-gray-100"
-            type="text"
-            placeholder="Nombre del Paciente"
-            {...register("name")}
-          />
-          {errors.name && <Error>{errors.name.message}</Error>}
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold">
+              {isEditing ? "Editar paciente" : "Nuevo paciente"}
+            </h2>
+            <p className="mt-0.5 truncate text-sm text-ink-muted">
+              {isEditing
+                ? activePatient?.name
+                : "Completá los datos para registrarlo"}
+            </p>
+          </div>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="shrink-0 rounded-lg px-2 py-1 text-sm text-ink-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
+              Cancelar
+            </button>
+          )}
         </div>
 
-        <div className="mb-5">
-          <label htmlFor="caretaker" className="text-sm uppercase font-bold">
-            Propietario
-          </label>
-          <input
-            id="caretaker"
-            className="w-full p-3  border border-gray-100"
-            type="text"
-            placeholder="Nombre del Propietario"
-            {...register("caretaker")}
-          />
-          {errors.caretaker && <Error>{errors.caretaker.message}</Error>}
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="name" className={labelClass}>
+              Paciente
+            </label>
+            <input
+              id="name"
+              type="text"
+              placeholder="Nombre del paciente"
+              className={fieldClass}
+              {...register("name")}
+            />
+            {errors.name && <Error>{errors.name.message}</Error>}
+          </div>
+
+          <div>
+            <label htmlFor="caretaker" className={labelClass}>
+              Propietario
+            </label>
+            <input
+              id="caretaker"
+              type="text"
+              placeholder="Nombre del propietario"
+              className={fieldClass}
+              {...register("caretaker")}
+            />
+            {errors.caretaker && <Error>{errors.caretaker.message}</Error>}
+          </div>
+
+          <div>
+            <label htmlFor="email" className={labelClass}>
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="email@ejemplo.com"
+              className={fieldClass}
+              {...register("email")}
+            />
+            {errors.email && <Error>{errors.email.message}</Error>}
+          </div>
+
+          <div>
+            <label htmlFor="date" className={labelClass}>
+              Fecha de alta
+            </label>
+            <input
+              id="date"
+              type="date"
+              className={fieldClass}
+              {...register("date")}
+            />
+            {errors.date && <Error>{errors.date.message}</Error>}
+          </div>
+
+          <div>
+            <label htmlFor="symptoms" className={labelClass}>
+              Síntomas
+            </label>
+            <textarea
+              id="symptoms"
+              rows={3}
+              placeholder="Motivo de la consulta"
+              className={`${fieldClass} min-h-24 resize-y`}
+              {...register("symptoms")}
+            />
+            {errors.symptoms && <Error>{errors.symptoms.message}</Error>}
+          </div>
         </div>
 
-        <div className="mb-5">
-          <label htmlFor="email" className="text-sm uppercase font-bold">
-            Email
-          </label>
-          <input
-            id="email"
-            className="w-full p-3  border border-gray-100"
-            type="email"
-            placeholder="Email de Registro"
-            {...register("email")}
-          />
-          {errors.email && <Error>{errors.email.message}</Error>}
-        </div>
-
-        <div className="mb-5">
-          <label htmlFor="date" className="text-sm uppercase font-bold">
-            Fecha Alta
-          </label>
-          <input
-            id="date"
-            className="w-full p-3  border border-gray-100"
-            type="date"
-            {...register("date")}
-          />
-          {errors.date && <Error>{errors.date.message}</Error>}
-        </div>
-
-        <div className="mb-5">
-          <label htmlFor="symptoms" className="text-sm uppercase font-bold">
-            Síntomas
-          </label>
-          <textarea
-            id="symptoms"
-            className="w-full p-3  border border-gray-100"
-            placeholder="Síntomas del paciente"
-            {...register("symptoms")}
-          />
-          {errors.symptoms && <Error>{errors.symptoms.message}</Error>}
-        </div>
-
-        <input
+        <button
           type="submit"
-          className="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-colors disabled:opacity-50"
           disabled={isSaving}
-          value={
-            isSaving
-              ? "Guardando..."
-              : isEditing
-                ? "Guardar Cambios"
-                : "Guardar Paciente"
-          }
-        />
-
-        {isEditing && (
-          <button
-            type="button"
-            className="bg-gray-500 w-full p-3 mt-3 text-white uppercase font-bold hover:bg-gray-600 cursor-pointer transition-colors"
-            onClick={handleCancel}
-          >
-            Cancelar Edición
-          </button>
-        )}
+          className="mt-6 w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-strong disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          {isSaving
+            ? "Guardando..."
+            : isEditing
+              ? "Guardar cambios"
+              : "Guardar paciente"}
+        </button>
       </form>
     </div>
   );
